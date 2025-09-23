@@ -1,0 +1,10 @@
+config
+.env
+logs
+__TIKTOK_ADS_TEST
+emails.csv
+legal.json
+natural.json
+test_create_csv.py
+ttt.py
+main copy.py
