@@ -4,9 +4,10 @@ import time
 
 import schedule
 
-from config.bitrix24_conf import B24_WEBHOOK_URL, FOP_STAGE_ID, TOV_STAGE_ID
+from config.bitrix24_conf import B24_WEBHOOK_URL, C22_CLASSY_TRADERS_STAGE_ID, C22_NEW_TRADERS_STAGE_ID, FOP_STAGE_ID, TOV_STAGE_ID
 from config.config import FB_ACCESS_TOKEN, FB_AD_ACCOUNT_ID, FB_CUSTOM_AUDIENCE_ID, GOOGLE_CRED_PATH, SP_ADDRESSBOOK_ID, SP_REST_API_ID, SP_REST_API_SECRET, SP_TOKEN_STORAGE, GOOGLE_SHEETS_ID_customers
 from config.youControl_conf import YC_API_KEY
+from constants import CLASSY_TRADERS_KVED, NEW_TRADERS_KVED
 from services.SendPulseClient.api import SendPulseManager
 from services.bitrix24.api import Bitrix24API
 from services.facebookAdsService.api import FacebookAudienceManager
@@ -14,6 +15,7 @@ from services.googleService.googleSheetsService import GoogleSheetsService
 from services.youcontrol.api import YouControlAPI
 from utils.Customers.index import Customer
 from utils.Logger.index import Logger
+from utils.main import filter_contractors_by_kved
 
 log_level = os.getenv("LOG_LEVEL", "INFO")
 
@@ -106,7 +108,12 @@ def run_daily_task():
         # Відправляє нових ТОВ в гілку B24
         if (legalPersons_list and len(legalPersons_list)>0):
             log.info(f'Start Processing of a new legalPersons')
-            procc_new_contractors_data(legalPersons_list, b24_api, TOV_STAGE_ID)
+            lp_new_treders_list, remaining_legalPersons_list = filter_contractors_by_kved(legalPersons_list, NEW_TRADERS_KVED, True)
+            lp_classy_treders_list, remaining_legalPersons_list = filter_contractors_by_kved(remaining_legalPersons_list, CLASSY_TRADERS_KVED, True)
+
+            procc_new_contractors_data(remaining_legalPersons_list, b24_api, TOV_STAGE_ID)
+            procc_new_contractors_data(lp_new_treders_list, b24_api, C22_NEW_TRADERS_STAGE_ID)
+            procc_new_contractors_data(lp_classy_treders_list, b24_api, C22_CLASSY_TRADERS_STAGE_ID)
         else:
             log.info(f'NON found new legalPersons_list')
 
@@ -116,7 +123,12 @@ def run_daily_task():
 
             # send to bitrix24
             try:
-                procc_new_contractors_data(naturalPersons_list, b24_api, FOP_STAGE_ID)
+                np_new_treders_list, remaining_naturalPersons_list = filter_contractors_by_kved(naturalPersons_list, NEW_TRADERS_KVED, True)
+                np_classy_treders_list, remaining_naturalPersons_list = filter_contractors_by_kved(remaining_naturalPersons_list, CLASSY_TRADERS_KVED, True)
+
+                procc_new_contractors_data(remaining_naturalPersons_list, b24_api, FOP_STAGE_ID)
+                procc_new_contractors_data(np_new_treders_list, b24_api, C22_NEW_TRADERS_STAGE_ID)
+                procc_new_contractors_data(np_classy_treders_list, b24_api, C22_CLASSY_TRADERS_STAGE_ID)
             except Exception as e:
                 log.critical(f'Error when adding data to B24: {e}')
             
