@@ -9,10 +9,13 @@ def filter_contractors_by_kved(contractors_list, kved_codes, only_main=True):
     """
     matching_contractors = []
     remaining_contractors = []
-    
+
     for contractor in contractors_list:
         contractor_kveds = contractor.get("economicActivities", [])
-        
+
+        if contractor_kveds is None:
+            contractor_kveds = []
+
         if only_main:
             contractor_kved_codes = [activity.get("code", "") for activity in contractor_kveds if activity.get("isMain", False)]
         else:

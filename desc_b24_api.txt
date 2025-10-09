@@ -1,0 +1,288 @@
+BITRIX24 CRM API DOCUMENTATION
+==============================
+
+OVERVIEW
+--------
+Bitrix24 REST API для роботи з угодами (deals) в CRM системі.
+
+AUTHENTICATION
+--------------
+Використовується webhook URL для автентифікації:
+https://domain.bitrix24.eu/rest/user_id/webhook_key/
+
+CORE API METHODS
+----------------
+
+1. СТВОРЕННЯ УГОДИ
+------------------
+API Method: crm.deal.add
+
+Параметри:
+- fields (dict): Поля угоди
+- params (dict): Додаткові параметри
+
+Відповідь:
+{
+  "result": 12345
+}
+
+ПОЛЯ (fields):
+- TITLE (string, обов'язкове) - Назва угоди
+- STAGE_ID (string) - ID стадії угоди
+- CATEGORY_ID (int) - ID категорії угоди
+- CONTACT_ID (int) - ID контакту
+- COMPANY_ID (int) - ID компанії
+- ASSIGNED_BY_ID (int) - ID відповідального користувача
+- OPPORTUNITY (float) - Сума угоди
+- CURRENCY_ID (string) - ID валюти (UAH, USD, EUR)
+- COMMENTS (string) - Коментарі
+- SOURCE_ID (string) - ID джерела
+- SOURCE_DESCRIPTION (string) - Опис джерела
+- UF_CRM_* (string) - Кастомні поля
+
+ПАРАМЕТРИ (params):
+- REGISTER_SONET_EVENT (string) - Реєстрація події в Живій Стрічці
+  * "Y" - зареєструвати подію (за замовчуванням)
+  * "N" - не реєструвати подію
+
+Приклад:
+POST /rest/user_id/webhook_key/crm.deal.add
+{
+  "fields": {
+    "TITLE": "New Deal",
+    "CATEGORY_ID": 22,
+    "STAGE_ID": "C22:UC_H7TBEC",
+    "CONTACT_ID": 123,
+    "ASSIGNED_BY_ID": 1,
+    "OPPORTUNITY": 10000,
+    "CURRENCY_ID": "UAH",
+    "COMMENTS": "Deal created via API",
+    "SOURCE_ID": "WEB",
+    "SOURCE_DESCRIPTION": "Website form",
+    "UF_CRM_65E989F5B627E": "Activity type"
+  },
+  "params": {
+    "REGISTER_SONET_EVENT": "Y"
+  }
+}
+
+2. ОТРИМАННЯ УГОДИ
+------------------
+API Method: crm.deal.get
+
+Параметри:
+- id (int): ID угоди
+
+Відповідь:
+{
+  "result": {
+    "ID": "12345",
+    "TITLE": "Deal Title",
+    "STAGE_ID": "C22:UC_H7TBEC",
+    "CATEGORY_ID": "22"
+  }
+}
+
+Приклад:
+POST /rest/user_id/webhook_key/crm.deal.get
+{
+  "id": 12345
+}
+
+3. РЕДАГУВАННЯ УГОДИ
+--------------------
+API Method: crm.deal.update
+
+Параметри:
+- id (int): ID угоди
+- fields (dict): Поля для оновлення
+
+Відповідь:
+{
+  "result": true
+}
+
+Приклад:
+POST /rest/user_id/webhook_key/crm.deal.update
+{
+  "id": 12345,
+  "fields": {
+    "STAGE_ID": "C22:UC_92HVBH",
+    "UF_CRM_65E989F5B627E": "Updated activity"
+  }
+}
+
+4. СПИСОК УГОД
+--------------
+API Method: crm.deal.list
+
+Параметри:
+- filter (dict): Фільтри для пошуку
+- select (list): Поля для вибірки
+- start (int): Початковий індекс (для пагінації)
+- order (dict): Сортування
+
+Відповідь:
+{
+  "result": [
+    {
+      "ID": "12345",
+      "TITLE": "Deal 1",
+      "STAGE_ID": "C22:UC_H7TBEC"
+    }
+  ],
+  "total": 1
+}
+
+Приклад:
+POST /rest/user_id/webhook_key/crm.deal.list
+{
+  "filter": {
+    "STAGE_ID": "C22:UC_H7TBEC"
+  },
+  "select": ["ID", "TITLE", "STAGE_ID"],
+  "start": 0
+}
+
+5. ОТРИМАННЯ ВСІХ ПОЛІВ УГОД
+-----------------------------
+API Method: crm.deal.fields
+
+Отримує всі доступні поля для угод включаючи стандартні та кастомні поля.
+
+Відповідь:
+{
+  "result": {
+    "ID": {
+      "type": "integer",
+      "isRequired": true,
+      "isReadOnly": true,
+      "isImmutable": true,
+      "isMultiple": false,
+      "isDynamic": false,
+      "title": "ID"
+    },
+    "TITLE": {
+      "type": "string",
+      "isRequired": true,
+      "isReadOnly": false,
+      "isImmutable": false,
+      "isMultiple": false,
+      "isDynamic": false,
+      "title": "Назва"
+    },
+    "STAGE_ID": {
+      "type": "string",
+      "isRequired": false,
+      "isReadOnly": false,
+      "isImmutable": false,
+      "isMultiple": false,
+      "isDynamic": false,
+      "title": "Стадія"
+    },
+    "UF_CRM_65E989F5B627E": {
+      "type": "string",
+      "isRequired": false,
+      "isReadOnly": false,
+      "isImmutable": false,
+      "isMultiple": false,
+      "isDynamic": true,
+      "title": "Тип діяльності"
+    }
+  }
+}
+
+Приклад:
+POST /rest/user_id/webhook_key/crm.deal.fields
+
+Як використовувати:
+1. Отримати всі поля: POST /rest/user_id/webhook_key/crm.deal.fields
+2. Знайти потрібне поле: field_info = response['result']['FIELD_NAME']
+3. Перевірити тип поля: field_type = field_info['type']
+4. Перевірити чи поле обов'язкове: is_required = field_info['isRequired']
+
+6. ВИДАЛЕННЯ УГОДИ
+------------------
+API Method: crm.deal.delete
+
+Параметри:
+- id (int): ID угоди
+
+Відповідь:
+{
+  "result": true
+}
+
+Приклад:
+POST /rest/user_id/webhook_key/crm.deal.delete
+{
+  "id": 12345
+}
+
+STANDARD FIELDS
+---------------
+Основні поля угод:
+- ID - Унікальний ідентифікатор
+- TITLE - Назва угоди (обов'язкове)
+- STAGE_ID - ID стадії угоди
+- CATEGORY_ID - ID категорії угоди
+- CONTACT_ID - ID контакту
+- COMPANY_ID - ID компанії
+- ASSIGNED_BY_ID - ID відповідального користувача
+- OPPORTUNITY - Сума угоди
+- CURRENCY_ID - ID валюти
+- DATE_CREATE - Дата створення
+- DATE_MODIFY - Дата зміни
+- CREATED_BY_ID - ID користувача, який створив
+- MODIFY_BY_ID - ID користувача, який змінив
+- COMMENTS - Коментарі
+- SOURCE_ID - ID джерела
+- SOURCE_DESCRIPTION - Опис джерела
+
+CUSTOM FIELDS (UF_CRM)
+----------------------
+Кастомні поля мають формат UF_CRM_[ID]
+
+Як отримати ID кастомних полів:
+
+1. Через адмін-панель Bitrix24:
+   - CRM → Налаштування → Поля угод
+   - Знайти потрібне поле та скопіювати його код
+
+2. Через API:
+   POST /rest/user_id/webhook_key/crm.deal.fields
+
+3. Поточні використовувані поля:
+   - UF_CRM_65E989F5B627E - Тип діяльності
+   - UF_CRM_66ACC6BAA0203 - Адреса
+   - UF_CRM_1682949203 - Код контрагента
+   - UF_CRM_1683118575 - Назва контрагента
+
+STAGE IDS
+---------
+Категорія 22 (CATEGORY_ID: 22):
+- C22:UC_H7TBEC - ФОП (FOP_STAGE_ID)
+- C22:UC_92HVBH - ТОВ (TOV_STAGE_ID)
+- C22:UC_371HUS - Нові торговці (C22_NEW_TRADERS_STAGE_ID)
+- C22:UC_0C74X1 - Класні торговці (C22_CLASSY_TRADERS_STAGE_ID)
+
+ERROR HANDLING
+--------------
+API повертає помилки у форматі:
+{
+  "error": "ERROR_CODE",
+  "error_description": "Error description"
+}
+
+Common errors:
+- INVALID_PARAMS - Невірні параметри
+- ACCESS_DENIED - Немає доступу
+- NOT_FOUND - Ресурс не знайдено
+- QUERY_LIMIT_EXCEEDED - Перевищено ліміт запитів
+
+RATE LIMITING
+-------------
+Bitrix24 має обмеження на кількість запитів:
+- 2 запити в секунду для webhook
+- 1000 запитів в хвилину для webhook
+- 50000 запитів в день для webhook
