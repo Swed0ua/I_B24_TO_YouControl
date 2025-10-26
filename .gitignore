@@ -8,3 +8,4 @@ natural.json
 test_create_csv.py
 ttt.py
 main copy.py
+__pycache__/
