@@ -9,3 +9,4 @@ test_create_csv.py
 ttt.py
 main copy.py
 __pycache__/
+venv/

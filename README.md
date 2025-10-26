@@ -139,10 +139,39 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Ensure config files exist with proper configuration
+# Required config files:
+# - config/bitrix24_conf.py
+# - config/youControl_conf.py
+# - config/config.py
+# - config/g_service_acc.json (Google Service Account)
 
 # Run the service
 python main.py
 ```
+
+---
+
+## Dependencies
+
+Install required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+Or install manually:
+
+```bash
+pip install requests gspread google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client schedule pysendpulse
+```
+
+### Main dependencies:
+- `requests` - HTTP library for API calls
+- `gspread` - Google Sheets API client
+- `google-auth` - Google authentication
+- `google-api-python-client` - Google API client library
+- `schedule` - Task scheduling
+- `pysendpulse` - SendPulse API client
 
 ---
 
