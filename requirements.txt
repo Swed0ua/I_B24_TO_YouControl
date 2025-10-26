@@ -5,5 +5,5 @@ google-auth-oauthlib==1.1.0
 google-auth-httplib2==0.1.1
 google-api-python-client==2.100.0
 schedule==1.2.0
-pysendpulse==1.2.10
+pysendpulse
 
