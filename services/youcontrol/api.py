@@ -16,7 +16,7 @@ class YouControlAPI:
         :param api_key: API-key for auth (Bearer).
         :param logger: Logger instance for logging API calls.
         """
-        self.base_url = "https://api.youscore.com.ua/v1"
+        self.base_url = "https://integration.youcontrol.market/api/v1"
         self.headers = {
             "Authorization": f"Bearer {api_key}",
             "Accept": "application/json",
