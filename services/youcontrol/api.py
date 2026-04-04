@@ -67,7 +67,7 @@ class YouControlAPI:
         """
         params = {
             "Depth": depth,
-            "isNew": str(only_new).lower(),  # API is waiting boolean value
+            "IsNew": str(only_new).lower(),  # API is waiting boolean value
         }
         return self._make_request("monitoring/legal-persons", params)
     
@@ -81,7 +81,7 @@ class YouControlAPI:
         """
         params = {
             "Depth": depth,
-            "isNew": str(only_new).lower(),  # API is waiting boolean value
+            "IsNew": str(only_new).lower(),  # API is waiting boolean value
         }
         return self._make_request("monitoring/natural-persons", params)
 
