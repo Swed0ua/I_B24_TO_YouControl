@@ -66,10 +66,10 @@ class YouControlAPI:
         :return: Словник із даними про контрагентів.
         """
         params = {
-            "depth": depth,
-            "onlyNew": str(only_new).lower(),  # API is waiting boolean value
+            "Depth": depth,
+            "isNew": str(only_new).lower(),  # API is waiting boolean value
         }
-        return self._make_request("newContractors/legalPersons", params)
+        return self._make_request("monitoring/legal-persons", params)
     
     def get_new_naturalPersons(self, depth: int = 0, only_new: bool = False) -> dict:
         """
@@ -80,10 +80,10 @@ class YouControlAPI:
         :return: Словник із даними про контрагентів.
         """
         params = {
-            "depth": depth,
-            "onlyNew": str(only_new).lower(),  # API is waiting boolean value
+            "Depth": depth,
+            "isNew": str(only_new).lower(),  # API is waiting boolean value
         }
-        return self._make_request("newContractors/naturalPersons", params)
+        return self._make_request("monitoring/natural-persons", params)
 
     def get_new_contractors(self, depth: int = 0, only_new: bool = False) -> dict:
         """
