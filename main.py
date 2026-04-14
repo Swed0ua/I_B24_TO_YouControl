@@ -55,6 +55,7 @@ def procc_new_contractors_data(data, b24_api, stage_id):
                 ct_phone = ct_phone[0]
             else:
                 ct_phone = ""
+            ct_email = ct.get("email", "")
 
             ct_name = ct.get("name", "")
             name_parts = [part for part in ct_name.split() if part]
@@ -76,7 +77,7 @@ def procc_new_contractors_data(data, b24_api, stage_id):
                         "РЕЛІГІЙНА ОРГАНІЗАЦІЯ", "АДВОКАТСЬКЕ БЮРО", "БЛАГОДІЙНА ОРГАНІЗАЦІЯ"]
 
             if not ct_legalForm in triggers:
-                result_created = b24_api.add_new_contractors_deal_params(stage_id=stage_id, first_name=ct_first_name, last_name=ct_last_name, middle_name=ct_middle_name, phone_number=ct_phone, title=ct_legalForm, type_activity=ct_economicActivities_text, address=ct_address,i_code=ct_code)
+                result_created = b24_api.add_new_contractors_deal_params(stage_id=stage_id, first_name=ct_first_name, last_name=ct_last_name, middle_name=ct_middle_name, phone_number=ct_phone, email=ct_email, title=ct_legalForm, type_activity=ct_economicActivities_text, address=ct_address,i_code=ct_code)
                 log.info(f'Result created new contractor: {result_created}')
             else:
                 log.info(f'Skip this category: {ct_legalForm}')
