@@ -88,7 +88,7 @@ class Bitrix24API:
         }
         return self._make_request("crm.deal.add", params)
 
-    def add_new_contractors_deal_params(self, stage_id:str ,first_name:str, last_name:str, phone_number:str, title:str, type_activity:str, address:str, i_code:str) -> dict:
+    def add_new_contractors_deal_params(self, stage_id:str ,first_name:str, last_name:str, middle_name:str, phone_number:str, title:str, type_activity:str, address:str, i_code:str) -> dict:
         """
         Adds a new deal with params to the Bitrix24 CRM.
 
@@ -103,6 +103,7 @@ class Bitrix24API:
         """
         contact_id = self.get_contact_id(first_name=first_name, 
                                          last_name=last_name,
+                                         middle_name=middle_name,
                                          phone=phone_number
                                          )
         
@@ -142,7 +143,7 @@ class Bitrix24API:
         }
         return self._make_request("crm.lead.update", params)
 
-    def get_contact_id(self, first_name: str = None, last_name: str = None, phone: str = None) -> int:
+    def get_contact_id(self, first_name: str = None, last_name: str = None, middle_name: str = None, phone: str = None) -> int:
         """
         Retrieves the contact ID by phone number or creates a new contact if it doesn't exist.
 
@@ -166,6 +167,7 @@ class Bitrix24API:
                     "fields": {
                         "NAME": first_name,
                         "LAST_NAME": last_name,
+                        "SECOND_NAME": middle_name,
                         "PHONE": [{"VALUE": phone, "VALUE_TYPE": "WORK"}],
                         'OPENED': 'Y',
                         'TYPE_ID': 'CLIENT',
