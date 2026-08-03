@@ -5,13 +5,14 @@ import time
 import schedule
 
 from config.bitrix24_conf import B24_WEBHOOK_URL, C22_CLASSY_TRADERS_STAGE_ID, C22_NEW_TRADERS_STAGE_ID, FOP_STAGE_ID, TOV_STAGE_ID
-from config.config import FB_ACCESS_TOKEN, FB_AD_ACCOUNT_ID, FB_CUSTOM_AUDIENCE_ID, GOOGLE_CRED_PATH, SP_ADDRESSBOOK_ID, SP_REST_API_ID, SP_REST_API_SECRET, SP_TOKEN_STORAGE, GOOGLE_SHEETS_ID_customers
+from config.config import FB_ACCESS_TOKEN, FB_AD_ACCOUNT_ID, FB_CUSTOM_AUDIENCE_ID, GOOGLE_CRED_PATH, SP_ADDRESSBOOK_ID, SP_REST_API_ID, SP_REST_API_SECRET, SP_TOKEN_STORAGE, GOOGLE_SHEETS_ID_customers, NOTIFICATION_API_KEY, NOTIFICATION_BASE_URL
 from config.youControl_conf import YC_API_KEY
 from constants import CLASSY_TRADERS_KVED, NEW_TRADERS_KVED
 from services.SendPulseClient.api import SendPulseManager
 from services.bitrix24.api import Bitrix24API
 from services.facebookAdsService.api import FacebookAudienceManager
 from services.googleService.googleSheetsService import GoogleSheetsService
+from services.notificationService.api import NotificationService
 from services.youcontrol.api import YouControlAPI
 from utils.Customers.index import Customer
 from utils.Logger.index import Logger
@@ -22,6 +23,7 @@ log_level = os.getenv("LOG_LEVEL", "INFO")
 log = Logger(name="I_YC_TO_B24", log_file="logs/app.log", level=log_level).get_logger()
 fb_audience_manager = FacebookAudienceManager(FB_ACCESS_TOKEN, FB_CUSTOM_AUDIENCE_ID, ad_account_id=FB_AD_ACCOUNT_ID, logger=log)
 send_pulse_manager = SendPulseManager(api_id=SP_REST_API_ID, api_secret=SP_REST_API_SECRET, token_storage=SP_TOKEN_STORAGE ,logger=log)
+notification_service = NotificationService(NOTIFICATION_BASE_URL, NOTIFICATION_API_KEY, logger=log)
 
 def send_new_connector_to_crm():
     pass
@@ -44,17 +46,14 @@ def send_data_to_meta_ads(data_list:list):
     :param data_list: Список з словниками даних користувачів (email та phone).
     """
 
-def procc_new_contractors_data(data, b24_api, stage_id):
+def procc_new_contractors_data(data, b24_api, stage_id, notify=False):
     for ct_id in range(len(data)):
         try:
             log.info(f'[{ct_id+1}/{len(data)}] Processing of a new application')
             ct = data[ct_id]
 
-            ct_phone = ct.get("phones", [""])
-            if len(ct_phone)>0:
-                ct_phone = ct_phone[0]
-            else:
-                ct_phone = ""
+            ct_phones = ct.get("phones") or []
+            ct_phone = ct_phones[0] if ct_phones else ""
             ct_email = ct.get("email", "")
 
             ct_name = ct.get("name", "")
@@ -79,6 +78,8 @@ def procc_new_contractors_data(data, b24_api, stage_id):
             if not ct_legalForm in triggers:
                 result_created = b24_api.add_new_contractors_deal_params(stage_id=stage_id, first_name=ct_first_name, last_name=ct_last_name, middle_name=ct_middle_name, phone_number=ct_phone, email=ct_email, title=ct_legalForm, type_activity=ct_economicActivities_text, address=ct_address,i_code=ct_code)
                 log.info(f'Result created new contractor: {result_created}')
+                if notify:
+                    notification_service.send_to_phones(ct_phones, code=ct_code)
             else:
                 log.info(f'Skip this category: {ct_legalForm}')
 
@@ -117,7 +118,7 @@ def run_daily_task():
             lp_classy_treders_list, remaining_legalPersons_list = filter_contractors_by_kved(remaining_legalPersons_list, CLASSY_TRADERS_KVED, True)
 
             procc_new_contractors_data(remaining_legalPersons_list, b24_api, TOV_STAGE_ID)
-            procc_new_contractors_data(lp_new_treders_list, b24_api, C22_NEW_TRADERS_STAGE_ID)
+            procc_new_contractors_data(lp_new_treders_list, b24_api, C22_NEW_TRADERS_STAGE_ID, notify=True)
             procc_new_contractors_data(lp_classy_treders_list, b24_api, C22_CLASSY_TRADERS_STAGE_ID)
         else:
             log.info(f'NON found new legalPersons_list')
@@ -132,7 +133,7 @@ def run_daily_task():
                 np_classy_treders_list, remaining_naturalPersons_list = filter_contractors_by_kved(remaining_naturalPersons_list, CLASSY_TRADERS_KVED, True)
 
                 procc_new_contractors_data(remaining_naturalPersons_list, b24_api, FOP_STAGE_ID)
-                procc_new_contractors_data(np_new_treders_list, b24_api, C22_NEW_TRADERS_STAGE_ID)
+                procc_new_contractors_data(np_new_treders_list, b24_api, C22_NEW_TRADERS_STAGE_ID, notify=True)
                 procc_new_contractors_data(np_classy_treders_list, b24_api, C22_CLASSY_TRADERS_STAGE_ID)
             except Exception as e:
                 log.critical(f'Error when adding data to B24: {e}')
