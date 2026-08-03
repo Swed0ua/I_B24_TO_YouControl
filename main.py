@@ -46,7 +46,7 @@ def send_data_to_meta_ads(data_list:list):
     :param data_list: Список з словниками даних користувачів (email та phone).
     """
 
-def procc_new_contractors_data(data, b24_api, stage_id, notify=False):
+def procc_new_contractors_data(data, b24_api, stage_id):
     for ct_id in range(len(data)):
         try:
             log.info(f'[{ct_id+1}/{len(data)}] Processing of a new application')
@@ -78,8 +78,7 @@ def procc_new_contractors_data(data, b24_api, stage_id, notify=False):
             if not ct_legalForm in triggers:
                 result_created = b24_api.add_new_contractors_deal_params(stage_id=stage_id, first_name=ct_first_name, last_name=ct_last_name, middle_name=ct_middle_name, phone_number=ct_phone, email=ct_email, title=ct_legalForm, type_activity=ct_economicActivities_text, address=ct_address,i_code=ct_code)
                 log.info(f'Result created new contractor: {result_created}')
-                if notify:
-                    notification_service.send_to_phones(ct_phones, code=ct_code)
+                notification_service.send_to_phones(ct_phones, code=ct_code)
             else:
                 log.info(f'Skip this category: {ct_legalForm}')
 
@@ -118,7 +117,7 @@ def run_daily_task():
             lp_classy_treders_list, remaining_legalPersons_list = filter_contractors_by_kved(remaining_legalPersons_list, CLASSY_TRADERS_KVED, True)
 
             procc_new_contractors_data(remaining_legalPersons_list, b24_api, TOV_STAGE_ID)
-            procc_new_contractors_data(lp_new_treders_list, b24_api, C22_NEW_TRADERS_STAGE_ID, notify=True)
+            procc_new_contractors_data(lp_new_treders_list, b24_api, C22_NEW_TRADERS_STAGE_ID)
             procc_new_contractors_data(lp_classy_treders_list, b24_api, C22_CLASSY_TRADERS_STAGE_ID)
         else:
             log.info(f'NON found new legalPersons_list')
@@ -133,7 +132,7 @@ def run_daily_task():
                 np_classy_treders_list, remaining_naturalPersons_list = filter_contractors_by_kved(remaining_naturalPersons_list, CLASSY_TRADERS_KVED, True)
 
                 procc_new_contractors_data(remaining_naturalPersons_list, b24_api, FOP_STAGE_ID)
-                procc_new_contractors_data(np_new_treders_list, b24_api, C22_NEW_TRADERS_STAGE_ID, notify=True)
+                procc_new_contractors_data(np_new_treders_list, b24_api, C22_NEW_TRADERS_STAGE_ID)
                 procc_new_contractors_data(np_classy_treders_list, b24_api, C22_CLASSY_TRADERS_STAGE_ID)
             except Exception as e:
                 log.critical(f'Error when adding data to B24: {e}')
