@@ -13,6 +13,8 @@ class NotificationService:
         self.logger = logger
 
     def send(self, phone: str, message_type: str = "welcome_new_contractor", idempotency_key: str = None):
+        # TODO: temporary disabled 
+        return
         if not phone:
             return None
 
